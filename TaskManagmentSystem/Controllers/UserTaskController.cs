@@ -16,7 +16,7 @@ namespace TaskManagmentSystem.Controllers
         {
             _context = context;
         }
-
+        //Add task
         [HttpPost("AddTask"), Authorize]
         public async Task<ActionResult> AddTask(UserTaskDTO taskDto)
         {
@@ -54,9 +54,9 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "An error occurred while adding the task.", exception = ex.Message });
             }
         }
-
+        //Edit task
         [HttpPut("EditTask/{taskId}"), Authorize]
-        public async Task<ActionResult> EditTask(int taskId, UserTaskDTO taskDto)
+        public async Task<ActionResult> EditTask(Guid taskId, UserTaskDTO taskDto)
         {
             try
             {
@@ -80,9 +80,9 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "An error occurred while updating the task.", exception = ex.Message });
             }
         }
-
+        //Delete Task
         [HttpDelete("DeleteTask/{taskId}"), Authorize]
-        public async Task<ActionResult> DeleteTask(int taskId)
+        public async Task<ActionResult> DeleteTask(Guid taskId)
         {
             try
             {
@@ -100,6 +100,31 @@ namespace TaskManagmentSystem.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = "An error occurred while deleting the task.", exception = ex.Message });
+            }
+        }
+
+        //Change status
+        [HttpPut("ChangeStatus/{taskId}")]
+        public async Task<ActionResult> ChangeStatus(UserTaskStatusDTO request ,Guid taskId)
+        {
+            try
+            {
+                var task = await _context.Tasks.FindAsync(taskId);
+                if (task == null)
+                {
+                    return NotFound(new { message = "Task not found." });
+                }
+
+                task.isFinishied = request.isFinished;
+
+                _context.Tasks.Update(task);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Status updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "An error occurred while updating the status.", exception = ex.Message });
             }
         }
     }
