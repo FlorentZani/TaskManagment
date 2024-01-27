@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TaskManagmentSystem.Entities
 {
@@ -12,6 +13,7 @@ namespace TaskManagmentSystem.Entities
         public String Description { get; set; }
         public DateTime DeadLine { get; set; }
         public bool isFinishied { get; set; }
+        [JsonIgnore]
         public User User { get; set; }
     }
 }

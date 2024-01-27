@@ -72,12 +72,16 @@ namespace TaskManagmentSystem.Controllers
             }
 
             string token = CreateToken(user);
-            return Ok(token);
+            var response = new
+            {
+                token = token
+            };
+            return Ok(response);
         }
 
 
         //Handle password hashing
-        private void CreatePasswordHash(String password, out byte[] passwordHash, out byte[] passwordSalt)
+        public static void CreatePasswordHash(String password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using(var hmac = new HMACSHA512())
             {
@@ -100,10 +104,8 @@ namespace TaskManagmentSystem.Controllers
         //Handle Token 
         private string CreateToken(User user)
         {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-            };
+            var claims = new List<Claim>();
+            claims.Add(new Claim("name", user.UserName));
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
                 _configuration.GetSection("AppSettings:Token").Value));

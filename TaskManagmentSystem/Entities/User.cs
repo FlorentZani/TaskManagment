@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace TaskManagmentSystem.Entities
 {
@@ -11,6 +12,7 @@ namespace TaskManagmentSystem.Entities
         public string LastName {  get; set; } = string.Empty;
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
+        [JsonIgnore]
         public List<UserTask> Tasks { get; set; }
 
     }
