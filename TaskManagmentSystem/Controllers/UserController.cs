@@ -9,7 +9,7 @@ namespace TaskManagmentSystem.Controllers
     {
         private readonly DataContext _context;
 
-        public UserController (DataContext context)
+        public UserController(DataContext context)
         {
             _context = context;
         }
@@ -21,39 +21,31 @@ namespace TaskManagmentSystem.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
             {
-                var badResponse = new
-                {
-                    message = "Username not found"
-                };
-                return BadRequest(badResponse);
+                return NotFound(new { message = "Username not found" });
             }
-            var okResponse = new UserDTO 
-            { 
-                UserName =  user.UserName,
+            var response = new UserDTO
+            {
+                UserName = user.UserName,
                 Name = user.Name,
                 LastName = user.LastName,
-
             };
 
-            return Ok(okResponse);
+            return Ok(response);
         }
 
         //Edit User 
         [HttpPut("EditUser/{userName}")]
-        public async Task<ActionResult> EditUserInfo(String userName , UserRegisterDTO UpdatedUser)
+        public async Task<ActionResult> EditUserInfo(String userName, UserRegisterDTO UpdatedUser)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u =>u.UserName == userName);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
             {
-                var badResponse = new
-                {
-                    message = "Username not found"
-                };
-                return BadRequest(badResponse);
+                return NotFound(new { message = "Username not found" });
             }
+
             byte[] PasswordHash;
             byte[] PasswordSalt;
-            AuthController.CreatePasswordHash(UpdatedUser.Password,out PasswordHash , out PasswordSalt);
+            AuthController.CreatePasswordHash(UpdatedUser.Password, out PasswordHash, out PasswordSalt);
 
             user.UserName = UpdatedUser.UserName;
             user.Name = UpdatedUser.Name;
@@ -64,57 +56,34 @@ namespace TaskManagmentSystem.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "User updated successfully" });
             }
             catch (Exception ex)
             {
-                var BadResponse = new
-                {
-                    message = "User update was not saved in the database "
-                };
-                return BadRequest(BadResponse);
+                return BadRequest(new { message = "Error updating user in the database", exception = ex.Message });
             }
-
-            var okResponse = new
-            {
-                message = "Update gone succesfully"
-            };
-            return Ok(okResponse);
-            
         }
 
         //Delete User 
         [HttpDelete("DeleteUser/{userName}")]
-        public async Task<ActionResult> DeleteUser(String userName) 
+        public async Task<ActionResult> DeleteUser(String userName)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
             {
-                var badResponse = new
-                {
-                    message = "Username not found"
-                };
-                return BadRequest(badResponse);
+                return NotFound(new { message = "Username not found" });
             }
+
             try
             {
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "User deleted successfully" });
             }
             catch (Exception ex)
             {
-                var badResponse = new
-                {
-                    message = "User was not removed from the database"
-                };
-                return BadRequest(badResponse);
+                return BadRequest(new { message = "Error removing user from the database", exception = ex.Message });
             }
-            var okResponse = new
-            {
-                message = "Username not found"
-            };
-            
-            return Ok(okResponse);
-
         }
     }
 }

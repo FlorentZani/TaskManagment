@@ -17,28 +17,21 @@ namespace TaskManagmentSystem.Controllers
             _context = context;
         }
 
-        //Add tasks to the database 
-
         [HttpPost("AddTask"), Authorize]
         public async Task<ActionResult> AddTask(UserTaskDTO taskDto)
         {
             try
             {
-                String userName = "";
                 var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
-                if (userNameClaim != null)
+                if (userNameClaim == null)
                 {
-                    userName = userNameClaim.Value;
-                }
-                if (String.IsNullOrEmpty(userName))
-                {
-                    return Unauthorized(userName);
+                    return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
                 if (user == null)
                 {
-                    return NotFound("User not found." + userName);
+                    return NotFound(new { message = "User not found." });
                 }
 
                 var userTask = new UserTask
@@ -53,55 +46,61 @@ namespace TaskManagmentSystem.Controllers
                 _context.Tasks.Add(userTask);
                 await _context.SaveChangesAsync();
 
-                var response = new
-                {
-                    TaskId = userTask.TaskId
-                };
-                return Ok(response);
-
+                return Ok(new { message = "Task added successfully.", TaskId = userTask.TaskId
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(new { message = "An error occurred while adding the task.", exception = ex.Message });
             }
-            
         }
 
         [HttpPut("EditTask/{taskId}"), Authorize]
         public async Task<ActionResult> EditTask(int taskId, UserTaskDTO taskDto)
         {
-            var task = await _context.Tasks.FindAsync(taskId);
-            if (task == null)
+            try
             {
-                return NotFound("Task not found.");
+                var task = await _context.Tasks.FindAsync(taskId);
+                if (task == null)
+                {
+                    return NotFound(new { message = "Task not found." });
+                }
+
+                task.Title = taskDto.Title;
+                task.Description = taskDto.Description;
+                task.DeadLine = taskDto.DeadLine;
+
+                _context.Tasks.Update(task);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Task updated successfully." });
             }
-
-            // Update task properties
-            task.Title = taskDto.Title;
-            task.Description = taskDto.Description;
-            task.DeadLine = taskDto.DeadLine;
-
-            _context.Tasks.Update(task);
-            await _context.SaveChangesAsync();
-
-            return Ok("Task updated successfully.");
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "An error occurred while updating the task.", exception = ex.Message });
+            }
         }
 
-        // Delete Task endpoint
         [HttpDelete("DeleteTask/{taskId}"), Authorize]
         public async Task<ActionResult> DeleteTask(int taskId)
         {
-            var task = await _context.Tasks.FindAsync(taskId);
-            if (task == null)
+            try
             {
-                return NotFound("Task not found.");
+                var task = await _context.Tasks.FindAsync(taskId);
+                if (task == null)
+                {
+                    return NotFound(new { message = "Task not found." });
+                }
+
+                _context.Tasks.Remove(task);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Task deleted successfully." });
             }
-
-            _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-
-            return Ok("Task deleted successfully.");
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "An error occurred while deleting the task.", exception = ex.Message });
+            }
         }
-
     }
 }
