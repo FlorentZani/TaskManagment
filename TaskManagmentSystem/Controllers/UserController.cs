@@ -57,7 +57,8 @@ namespace TaskManagmentSystem.Controllers
             {
                 return NotFound(new { message = "User not found." });
             }
-            if (await _context.Users.AnyAsync(u => u.UserName == UpdatedUser.UserName))
+            
+            if (await _context.Users.AnyAsync(u => u.UserName == UpdatedUser.UserName && u.UserId != user.UserId))
             {
                 return BadRequest(new { message = "Username is taken" });
             }
