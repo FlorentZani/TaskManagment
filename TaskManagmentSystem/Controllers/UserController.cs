@@ -20,13 +20,13 @@ namespace TaskManagmentSystem.Controllers
         [HttpGet("UserDataByUserName"),Authorize]
         public async Task<ActionResult<UserDTO>> getUserByUserName()
         {
-            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
             if (userNameClaim == null)
             {
                 return Unauthorized(new { message = "User not authorized." });
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
             if (user == null)
             {
                 return NotFound(new { message = "User not found." });
@@ -45,18 +45,22 @@ namespace TaskManagmentSystem.Controllers
         [HttpPut("EditUser"),Authorize]
         public async Task<ActionResult> EditUserInfo([FromBody] EditUserDTO UpdatedUser)
         {
-            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
             if (userNameClaim == null)
             {
                 return Unauthorized(new { message = "User not authorized." });
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
+
             if (user == null)
             {
                 return NotFound(new { message = "User not found." });
             }
-
+            if (await _context.Users.AnyAsync(u => u.UserName == UpdatedUser.UserName))
+            {
+                return BadRequest(new { message = "Username is taken" });
+            }
             user.UserName = UpdatedUser.UserName;
             user.Name = UpdatedUser.Name;
             user.LastName = UpdatedUser.LastName;
@@ -76,13 +80,14 @@ namespace TaskManagmentSystem.Controllers
         [HttpDelete("DeleteUser"),Authorize]
         public async Task<ActionResult> DeleteUser()
         {
-            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
             if (userNameClaim == null)
             {
                 return Unauthorized(new { message = "User not authorized." });
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
+
             if (user == null)
             {
                 return NotFound(new { message = "User not found." });
@@ -109,13 +114,13 @@ namespace TaskManagmentSystem.Controllers
         [HttpPut("EditUserPassword"), Authorize]
         public async Task<ActionResult> EditUserInfo([FromBody] EditUserPasswordDTO UpdatedUser)
         {
-            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
             if (userNameClaim == null)
             {
                 return Unauthorized(new { message = "User not authorized." });
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
             if (user == null)
             {
                 return NotFound(new { message = "User not found." });

@@ -105,9 +105,10 @@ namespace TaskManagmentSystem.Controllers
         // Handle Token 
         private string CreateToken(User user)
         {
+            String id = user.UserId.ToString();
             var claims = new List<Claim>
             {
-                new Claim("name", user.UserName)
+                new Claim("userId", id)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));

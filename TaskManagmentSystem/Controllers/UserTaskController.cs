@@ -22,13 +22,13 @@ namespace TaskManagmentSystem.Controllers
         {
             try
             {
-                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
                 if (userNameClaim == null)
                 {
                     return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
                 if (user == null)
                 {
                     return NotFound(new { message = "User not found." });
@@ -58,13 +58,13 @@ namespace TaskManagmentSystem.Controllers
         {
             try
             {
-                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
                 if (userNameClaim == null)
                 {
                     return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
                 if (user == null)
                 {
                     return NotFound(new { message = "User not found." });
@@ -97,13 +97,13 @@ namespace TaskManagmentSystem.Controllers
         {
             try
             {
-                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
                 if (userNameClaim == null)
                 {
                     return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
                 if (user == null)
                 {
                     return NotFound(new { message = "User not found." });
@@ -141,13 +141,13 @@ namespace TaskManagmentSystem.Controllers
         {
             try
             {
-                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
                 if (userNameClaim == null)
                 {
                     return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
                 if (user == null)
                 {
                     return NotFound(new { message = "User not found." });
@@ -181,13 +181,13 @@ namespace TaskManagmentSystem.Controllers
         {
             try
             {
-                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "userId");
                 if (userNameClaim == null)
                 {
                     return Unauthorized(new { message = "User not authorized." });
                 }
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userNameClaim.Value);
                 if (user == null)
                 {
                     return NotFound(new { message = "User not found." });
