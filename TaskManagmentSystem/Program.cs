@@ -43,20 +43,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS configuration (optional)
-var cors = Environment.GetEnvironmentVariable("CORS");
-var origins = cors?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy", policy =>
-    {
-        policy.WithOrigins(origins ?? new string[] { })
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy(name: "CorsPolicy",
+                      policy =>
+                      {
+                          policy.WithOrigins(
+                                  "http://127.0.0.1:5500",
+                                  "https://127.0.0.1:5500"
+                              )
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                      });
 });
 
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -66,9 +70,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// Apply CORS policy if needed
-app.UseCors("CorsPolicy");
 
 // Authentication and Authorization
 app.UseAuthentication();
