@@ -16,6 +16,42 @@ namespace TaskManagmentSystem.Controllers
         {
             _context = context;
         }
+        //Get all user tasks 
+        [HttpGet("GetAllUserTasks"),Authorize]
+        public async Task<ActionResult<List<UserTaskGetDTO>>> GetAllTasksForUser()
+        {
+            try
+            {
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                if (userNameClaim == null)
+                {
+                    return Unauthorized(new { message = "User not authorized." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                var userTasks = await _context.Tasks.Where(task => task.UserId == user.UserId).ToListAsync();
+                var userTaskGetDTOs = userTasks.Select(task => new UserTaskGetDTO
+                {
+                    TaskId = task.TaskId,
+                    Title = task.Title,
+                    Description = task.Description,
+                    Deadline = task.DeadLine,
+                    Status = task.isFinishied ? "FINISHED" : "UNFINISHED"
+                }).ToList();
+
+                return userTaskGetDTOs;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing your request." });
+            }
+        }
+
         //Add task
         [HttpPost("AddTask"), Authorize]
         public async Task<ActionResult> AddTask(UserTaskDTO taskDto)
@@ -54,16 +90,34 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "An error occurred while adding the task.", exception = ex.Message });
             }
         }
-        //Edit task
+
+        // Edit task
         [HttpPut("EditTask/{taskId}"), Authorize]
         public async Task<ActionResult> EditTask(Guid taskId, UserTaskDTO taskDto)
         {
             try
             {
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                if (userNameClaim == null)
+                {
+                    return Unauthorized(new { message = "User not authorized." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
                 var task = await _context.Tasks.FindAsync(taskId);
                 if (task == null)
                 {
                     return NotFound(new { message = "Task not found." });
+                }
+
+                if (task.UserId != user.UserId)
+                {
+                    return BadRequest(new { message = "Access denied. You can only edit your own tasks." });
                 }
 
                 task.Title = taskDto.Title;
@@ -80,16 +134,34 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "An error occurred while updating the task.", exception = ex.Message });
             }
         }
-        //Delete Task
+
+        // Delete Task
         [HttpDelete("DeleteTask/{taskId}"), Authorize]
         public async Task<ActionResult> DeleteTask(Guid taskId)
         {
             try
             {
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                if (userNameClaim == null)
+                {
+                    return Unauthorized(new { message = "User not authorized." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
                 var task = await _context.Tasks.FindAsync(taskId);
                 if (task == null)
                 {
                     return NotFound(new { message = "Task not found." });
+                }
+
+                if (task.UserId != user.UserId)
+                {
+                    return BadRequest(new { message = "Access denied. You can only delete your own tasks." });
                 }
 
                 _context.Tasks.Remove(task);
@@ -103,16 +175,33 @@ namespace TaskManagmentSystem.Controllers
             }
         }
 
-        //Change status
-        [HttpPut("ChangeStatus/{taskId}")]
-        public async Task<ActionResult> ChangeStatus(UserTaskStatusDTO request ,Guid taskId)
+        // Change status
+        [HttpPut("ChangeStatus/{taskId}"), Authorize]
+        public async Task<ActionResult> ChangeStatus(UserTaskStatusDTO request, Guid taskId)
         {
             try
             {
+                var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+                if (userNameClaim == null)
+                {
+                    return Unauthorized(new { message = "User not authorized." });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
                 var task = await _context.Tasks.FindAsync(taskId);
                 if (task == null)
                 {
                     return NotFound(new { message = "Task not found." });
+                }
+
+                if (task.UserId != user.UserId)
+                {
+                    return BadRequest(new { message = "Access denied. You can only change the status of your own tasks." });
                 }
 
                 task.isFinishied = request.isFinished;
@@ -127,5 +216,6 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "An error occurred while updating the status.", exception = ex.Message });
             }
         }
+
     }
 }

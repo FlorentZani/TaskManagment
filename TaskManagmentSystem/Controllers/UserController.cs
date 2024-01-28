@@ -6,6 +6,8 @@ using TaskManagmentSystem.Entities;
 
 namespace TaskManagmentSystem.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class UserController : Controller
     {
         private readonly DataContext _context;
@@ -14,7 +16,6 @@ namespace TaskManagmentSystem.Controllers
         {
             _context = context;
         }
-
         
         [HttpGet("UserDataByUserName"),Authorize]
         public async Task<ActionResult<UserDTO>> getUserByUserName()
@@ -42,7 +43,7 @@ namespace TaskManagmentSystem.Controllers
 
         //Edit User 
         [HttpPut("EditUser"),Authorize]
-        public async Task<ActionResult> EditUserInfo(UserRegisterDTO UpdatedUser)
+        public async Task<ActionResult> EditUserInfo([FromBody] UserRegisterDTO UpdatedUser)
         {
             var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
             if (userNameClaim == null)
