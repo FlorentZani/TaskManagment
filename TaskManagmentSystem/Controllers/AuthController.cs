@@ -46,8 +46,9 @@ namespace TaskManagmentSystem.Controllers
 
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
-
-                return Ok(new { message = "Registration successful" });
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == request.UserName);
+                string token = CreateToken(user);
+                return Ok(new { message = "Registration successful" , token = token});
             }
             catch (Exception ex)
             {
