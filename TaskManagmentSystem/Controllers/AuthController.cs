@@ -93,7 +93,7 @@ namespace TaskManagmentSystem.Controllers
         }
 
         // Handle password verification
-        private bool VerifyPasswordHash(string inputedPassword, byte[] userPasswordHash, byte[] userPasswordSalt)
+        public static  bool VerifyPasswordHash(string inputedPassword, byte[] userPasswordHash, byte[] userPasswordSalt)
         {
             using (var hmac = new HMACSHA512(userPasswordSalt))
             {

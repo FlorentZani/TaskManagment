@@ -43,7 +43,7 @@ namespace TaskManagmentSystem.Controllers
 
         //Edit User 
         [HttpPut("EditUser"),Authorize]
-        public async Task<ActionResult> EditUserInfo([FromBody] UserRegisterDTO UpdatedUser)
+        public async Task<ActionResult> EditUserInfo([FromBody] EditUserDTO UpdatedUser)
         {
             var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
             if (userNameClaim == null)
@@ -56,15 +56,10 @@ namespace TaskManagmentSystem.Controllers
             {
                 return NotFound(new { message = "User not found." });
             }
-            byte[] PasswordHash;
-            byte[] PasswordSalt;
-            AuthController.CreatePasswordHash(UpdatedUser.Password, out PasswordHash, out PasswordSalt);
 
             user.UserName = UpdatedUser.UserName;
             user.Name = UpdatedUser.Name;
             user.LastName = UpdatedUser.LastName;
-            user.PasswordHash = PasswordHash;
-            user.PasswordSalt = PasswordSalt;
 
             try
             {
@@ -109,5 +104,52 @@ namespace TaskManagmentSystem.Controllers
                 return BadRequest(new { message = "Error removing user from the database", exception = ex.Message });
             }
         }
+
+        //Edit User password
+        [HttpPut("EditUserPassword"), Authorize]
+        public async Task<ActionResult> EditUserInfo([FromBody] EditUserPasswordDTO UpdatedUser)
+        {
+            var userNameClaim = User.Claims.FirstOrDefault(c => c.Type == "name");
+            if (userNameClaim == null)
+            {
+                return Unauthorized(new { message = "User not authorized." });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userNameClaim.Value);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            byte[] OldPasswordHash = user.PasswordHash;
+            byte[] OldPasswordSalt = user.PasswordSalt;
+
+            if (AuthController.VerifyPasswordHash(UpdatedUser.OldPassword, OldPasswordHash, OldPasswordSalt) != true)
+            {
+                return BadRequest(new { message = "Old password is wrong" });
+            }
+            else
+            {
+                byte[] PasswordHash;
+                byte[] PasswordSalt;
+                AuthController.CreatePasswordHash(UpdatedUser.NewPassword, out PasswordHash, out PasswordSalt);
+
+                user.PasswordHash = PasswordHash;
+                user.PasswordSalt = PasswordSalt;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "User updated password successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Error updating user password in the database", exception = ex.Message });
+            }
+        }
+
+
+
     }
 }
